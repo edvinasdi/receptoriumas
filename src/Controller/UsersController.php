@@ -86,9 +86,16 @@ class UsersController extends AbstractFOSRestController
         // Database
         $entityManager = $this->getDoctrine()->getManager();
         $request = Request::createFromGlobals();
-
+        $email = $request->get("email");
+        $existingUser = $this->getDoctrine()->getRepository(User::class)->findOneByEmail($email);
+        if($existingUser) {
+            $response = array("status" => "this email already registered", "email" => $email);
+            $res = new JsonResponse($response);
+            $res->setStatusCode(409);
+            return $res;
+        }
         $user = new User();
-        $user->setEMail($request->get("email"));
+        $user->setEMail($email);
         $user->setPassword($request->get("password"));
         $user->setName($request->get("name"));
         $dateString = $request->get("birthday");
@@ -185,14 +192,15 @@ class UsersController extends AbstractFOSRestController
         $dateString = $request->get("birthday");
         $user->setBirthday(\DateTime::createFromFormat('Y-m-d', $dateString));
 
-        // Updating database
-        $entityManager->persist($user);
-        $entityManager->flush();
-
         // Generating response
         $response = array("status" => "updated", "user" => $user->jsonSerialize());
         $res = new JsonResponse($response);
         $res->setStatusCode(200);
+
+        // Updating database
+        $entityManager->persist($user);
+        $entityManager->flush();
+
         return $res;
     }
 

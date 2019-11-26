@@ -99,10 +99,11 @@ class User implements \JsonSerializable
     public function jsonSerialize()
     {
         return
-            [
-                'id' => $this->getId(),
-                'name' => $this->getName(),
-                'birthday' => $this->getBirthday()->format("Y-m-d")
-            ];
+        [
+            'id' => $this->getId(),
+            'email' => $this->getEMail(),
+            'name' => $this->getName(),
+            'birthday' => $this->getBirthday()->format("Y-m-d")
+        ];
     }
 }

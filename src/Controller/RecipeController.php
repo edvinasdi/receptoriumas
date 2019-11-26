@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Recipe;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -50,24 +51,49 @@ class RecipeController extends AbstractFOSRestController
      * @Rest\Get("/api/recipes")
      */
     public function getRecipes() {
-        return $this->generateRecipes();
+        $recipes = $this->getDoctrine()
+            ->getRepository(Recipe::class)
+            ->findAll()
+        ;
+        return $recipes;
     }
 
     /**
      * @Rest\Post("/api/recipes")
      */
     public function createRecipe() {
+//        $request = Request::createFromGlobals();
+//        $title = $request->get("title");
+//        $description = $request->get("description");
+//
+//        $recipe = [];
+//        $recipe['id'] = rand(6,100);
+//        $recipe['title'] = $title;
+//        $recipe['ingredients'] = [];
+//        $recipe['description'] = $description;
+//
+//        $response = array("status" => "created", "recipe" => $recipe);
+//        $res = new JsonResponse($response);
+//        $res->setStatusCode(201);
+//        return $res;
+
+        // Database
+        $entityManager = $this->getDoctrine()->getManager();
         $request = Request::createFromGlobals();
-        $title = $request->get("title");
-        $description = $request->get("description");
+        $recipe = new Recipe();
+        $recipe->setTitle($request->get("title"));
+        $recipe->setDescription($request->get("description"));
+        $recipe->setPrepTime((int)$request->get("prepTime"));
+        $ingredients = $request->get("ingredients");
+        for ($i = 0; $i <= sizeof($ingredients); $i++) {
+            // array of ingredients contains ingIDs
+            $recipe->addIngredient($ingredients[$i]);
+        }
 
-        $recipe = [];
-        $recipe['id'] = rand(6,100);
-        $recipe['title'] = $title;
-        $recipe['ingredients'] = [];
-        $recipe['description'] = $description;
+        $entityManager->persist($recipe);
+        $entityManager->flush();
 
-        $response = array("status" => "created", "recipe" => $recipe);
+        $response = array("status" => "created", "recipe" => $recipe->jsonSerialize());
         $res = new JsonResponse($response);
         $res->setStatusCode(201);
         return $res;
