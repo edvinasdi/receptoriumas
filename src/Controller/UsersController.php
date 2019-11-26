@@ -65,7 +65,6 @@ class UsersController extends AbstractFOSRestController
      */
     public function createUser()
     {
-        // Hardcoded data
 //        $request = Request::createFromGlobals();
 //        $email = $request->get("email");
 //        $password = $request->get("password");
@@ -109,7 +108,10 @@ class UsersController extends AbstractFOSRestController
      */
     public function getUsers()
     {
-        return $this->generateUsers();
+        $users = $this->getDoctrine()
+            ->getRepository(User::class)
+            ->findAll();
+        return $users;
     }
 
     /**
@@ -117,13 +119,22 @@ class UsersController extends AbstractFOSRestController
      */
     public function getUserById($id_user)
     {
-        $users = $this->generateUsers();
-        if($id_user >= sizeof($users) or $id_user < 0) {
+//        $users = $this->generateUsers();
+//        if($id_user >= sizeof($users) or $id_user < 0) {
+//            $res = new JsonResponse();
+//            $res->setStatusCode(204);
+//            return $res;
+//        }
+//        return $users[$id_user];
+        $user = $this->getDoctrine()
+            ->getRepository(User::class)
+            ->find($id_user);
+        if(!$user) {
             $res = new JsonResponse();
             $res->setStatusCode(204);
             return $res;
         }
-        return $users[$id_user];
+        return $user;
     }
 
     /**
@@ -131,26 +142,55 @@ class UsersController extends AbstractFOSRestController
      */
     public function updateUser($id_user)
     {
-        $users = $this->generateUsers();
-        $request = Request::createFromGlobals();
-        $email = $request->get("email");
-        $password = $request->get("password");
-        $name = $request->get("name");
-        $birthday = $request->get("birthday");
+//        $users = $this->generateUsers();
+//        $request = Request::createFromGlobals();
+//        $email = $request->get("email");
+//        $password = $request->get("password");
+//        $name = $request->get("name");
+//        $birthday = $request->get("birthday");
+//
+//        if($id_user >= sizeof($users) or $id_user < 0) {
+//            $res = new JsonResponse();
+//            $res->setStatusCode(204);
+//            return $res;
+//        }
+//
+//        $user = $users[$id_user];
+//        $user['e-mail'] = $email;
+//        $user['password'] = $password;
+//        $user['name'] = $name;
+//        $user['birthday'] = $birthday;
+//
+//        $response = array("status" => "updated", "user" => $user);
+//        $res = new JsonResponse($response);
+//        $res->setStatusCode(200);
+//        return $res;
 
-        if($id_user >= sizeof($users) or $id_user < 0) {
+        $entityManager = $this->getDoctrine()->getManager();
+        $request = Request::createFromGlobals();
+
+        // Finding user
+        $user = $this->getDoctrine()
+            ->getRepository(User::class)
+            ->find($id_user);
+        if(!$user) {
             $res = new JsonResponse();
             $res->setStatusCode(204);
             return $res;
         }
 
-        $user = $users[$id_user];
-        $user['e-mail'] = $email;
-        $user['password'] = $password;
-        $user['name'] = $name;
-        $user['birthday'] = $birthday;
+        // Updating user
+        $user->setEMail($request->get("email"));
+        $user->setName($request->get("name"));
+        $dateString = $request->get("birthday");
+        $user->setBirthday(\DateTime::createFromFormat('Y-m-d', $dateString));
 
-        $response = array("status" => "updated", "user" => $user);
+        // Updating database
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        // Generating response
+        $response = array("status" => "updated", "user" => $user->jsonSerialize());
         $res = new JsonResponse($response);
         $res->setStatusCode(200);
         return $res;
@@ -161,16 +201,33 @@ class UsersController extends AbstractFOSRestController
      */
     public function deleteUser($id_user)
     {
-        $users = $this->generateUsers();
-        if($id_user >= sizeof($users) or $id_user < 0) {
+//        $users = $this->generateUsers();
+//        if($id_user >= sizeof($users) or $id_user < 0) {
+//            $res = new JsonResponse();
+//            $res->setStatusCode(204);
+//            return $res;
+//        }
+//        $deleted = $users[$id_user];
+//        $response = array("status" => "deleted", "user" => $deleted);
+//        $res = new JsonResponse($response);
+//        $res->setStatusCode(200); // 204 jei nepavyko
+//        return $res;
+        $user = $this->getDoctrine()
+            ->getRepository(User::class)
+            ->find($id_user);
+        if(!$user) {
             $res = new JsonResponse();
             $res->setStatusCode(204);
             return $res;
         }
-        $deleted = $users[$id_user];
-        $response = array("status" => "deleted", "user" => $deleted);
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->remove($user);
+        $entityManager->flush();
+
+        // Generating response
+        $response = array("status" => "deleted", "user" => $user->jsonSerialize());
         $res = new JsonResponse($response);
-        $res->setStatusCode(200); // 204 jei nepavyko
+        $res->setStatusCode(200);
         return $res;
     }
 }
