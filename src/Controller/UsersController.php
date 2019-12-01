@@ -86,7 +86,8 @@ class UsersController extends AbstractFOSRestController
         // Database
         $entityManager = $this->getDoctrine()->getManager();
         $request = Request::createFromGlobals();
-        $email = $request->get("email");
+        $data = json_decode($request->getContent());
+        $email = $data->email;
         $existingUser = $this->getDoctrine()->getRepository(User::class)->findOneByEmail($email);
         if($existingUser) {
             $response = array("status" => "this email already registered", "email" => $email);
@@ -96,9 +97,9 @@ class UsersController extends AbstractFOSRestController
         }
         $user = new User();
         $user->setEMail($email);
-        $user->setPassword($request->get("password"));
-        $user->setName($request->get("name"));
-        $dateString = $request->get("birthday");
+        $user->setPassword($data->password);
+        $user->setName($data->name);
+        $dateString = $data->birthday;
         $user->setBirthday(\DateTime::createFromFormat('Y-m-d', $dateString));
 
         $entityManager->persist($user);
@@ -175,6 +176,7 @@ class UsersController extends AbstractFOSRestController
 
         $entityManager = $this->getDoctrine()->getManager();
         $request = Request::createFromGlobals();
+        $data = json_decode($request->getContent());
 
         // Finding user
         $user = $this->getDoctrine()
@@ -187,20 +189,19 @@ class UsersController extends AbstractFOSRestController
         }
 
         // Updating user
-        $user->setEMail($request->get("email"));
-        $user->setName($request->get("name"));
-        $dateString = $request->get("birthday");
+        $user->setEMail($data->email);
+        $user->setName($data->name);
+        $dateString = $data->birthday;
         $user->setBirthday(\DateTime::createFromFormat('Y-m-d', $dateString));
-
-        // Generating response
-        $response = array("status" => "updated", "user" => $user->jsonSerialize());
-        $res = new JsonResponse($response);
-        $res->setStatusCode(200);
 
         // Updating database
         $entityManager->persist($user);
         $entityManager->flush();
 
+        // Generating response
+        $response = array("status" => "updated", "user" => $user->jsonSerialize());
+        $res = new JsonResponse($response);
+        $res->setStatusCode(200);
         return $res;
     }
 

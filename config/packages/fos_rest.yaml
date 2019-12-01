@@ -4,6 +4,7 @@ fos_rest:
   routing_loader:
     include_format: false
   format_listener:
+    enabled: true
     rules:
       - { path: '^/', priorities: ['json'], fallback_format: json }
   exception:

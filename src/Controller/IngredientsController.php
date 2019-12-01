@@ -29,7 +29,8 @@ class IngredientsController extends AbstractFOSRestController
 //        return $res;
         $entityManager = $this->getDoctrine()->getManager();
         $request = Request::createFromGlobals();
-        $name = $request->get("name");
+        $data = json_decode($request->getContent());
+        $name = $data->name;
 
         $existingIngredient = $this->getDoctrine()->getRepository(Ingredient::class)->findOneByName($name);
         if($existingIngredient) {
@@ -105,6 +106,7 @@ class IngredientsController extends AbstractFOSRestController
 //        return $res;
         $entityManager = $this->getDoctrine()->getManager();
         $request = Request::createFromGlobals();
+        $data = json_decode($request->getContent());
 
         // Finding user
         $ingredient = $this->getDoctrine()
@@ -117,7 +119,7 @@ class IngredientsController extends AbstractFOSRestController
         }
 
         // Updating ingredient
-        $ingredient->setName($request->get("name"));
+        $ingredient->setName($data->name);
 
         // Updating database
         $entityManager->persist($ingredient);

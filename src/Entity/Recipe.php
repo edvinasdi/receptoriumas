@@ -84,6 +84,18 @@ class Recipe
         return $this;
     }
 
+    public function jsonSerialize()
+    {
+        return
+            [
+                'id' => $this->getId(),
+                'title' => $this->getTitle(),
+                'description' => $this->getDescription(),
+                'prepTime' => $this->getPrepTime(),
+                'ingredients' => $this->getIngredients()->toArray()
+            ];
+    }
+
     /**
      * @return Collection|Ingredient[]
      */
@@ -110,15 +122,13 @@ class Recipe
         return $this;
     }
 
-    public function jsonSerialize()
-    {
-        return
-            [
-                'id' => $this->getId(),
-                'title' => $this->getTitle(),
-                'description' => $this->getDescription(),
-                'prepTime' => $this->getPrepTime(),
-                'ingredients' => $this->getIngredients()
-            ];
+    public function removeIngredientById($ingredient_id) :bool {
+        foreach ($this->ingredients as $ingredient) {
+            if($ingredient->getId() == $ingredient_id) {
+                $this->ingredients->removeElement($ingredient);
+                return true;
+            }
+        }
+        return false;
     }
 }
