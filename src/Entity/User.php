@@ -17,7 +17,7 @@ class User implements \JsonSerializable
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $eMail;
 
@@ -35,6 +35,11 @@ class User implements \JsonSerializable
      * @ORM\Column(type="date")
      */
     private $birthday;
+
+    /**
+     * @ORM\Column(type="json")
+     */
+    private $roles = [];
 
     public function getId(): ?int
     {
@@ -105,5 +110,17 @@ class User implements \JsonSerializable
             'name' => $this->getName(),
             'birthday' => $this->getBirthday()->format("Y-m-d")
         ];
+    }
+
+    public function getRoles(): ?array
+    {
+        return $this->roles;
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+
+        return $this;
     }
 }
