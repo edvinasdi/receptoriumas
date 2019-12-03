@@ -96,9 +96,10 @@ class UsersController extends AbstractFOSRestController
             return $res;
         }
         $user = new User();
-        $user->setEMail($email);
+        $user->setEmail($email);
         $user->setPassword($data->password);
         $user->setName($data->name);
+        $user->setRoles(["ROLE_USER"]);
         $dateString = $data->birthday;
         $user->setBirthday(\DateTime::createFromFormat('Y-m-d', $dateString));
 
@@ -189,7 +190,7 @@ class UsersController extends AbstractFOSRestController
         }
 
         // Updating user
-        $user->setEMail($data->email);
+        $user->setEmail($data->email);
         $user->setName($data->name);
         $dateString = $data->birthday;
         $user->setBirthday(\DateTime::createFromFormat('Y-m-d', $dateString));

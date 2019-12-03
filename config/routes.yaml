@@ -11,3 +11,5 @@
 #  type      : rest
 #  resource  : App\Controller\UsersController
 #  prefix    : api/users
+api_login_check:
+  path: /api/login_check

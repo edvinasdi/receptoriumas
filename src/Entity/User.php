@@ -3,33 +3,35 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
-class User implements \JsonSerializable
+class User implements UserInterface, \JsonSerializable
 {
     /**
      * @ORM\Id()
-     * @ORM\GeneratedValue(strategy="AUTO")
+     * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255, unique=true)
+     * @ORM\Column(type="string", length=180, unique=true)
      */
-    private $eMail;
+    private $email;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="json")
+     */
+    private $roles = [];
+
+    /**
+     * @var string The hashed password
+     * @ORM\Column(type="string")
      */
     private $password;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $name;
 
     /**
      * @ORM\Column(type="date")
@@ -37,30 +39,62 @@ class User implements \JsonSerializable
     private $birthday;
 
     /**
-     * @ORM\Column(type="json")
+     * @ORM\Column(type="string", length=255)
      */
-    private $roles = [];
+    private $name;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getEMail(): ?string
+    public function getEmail(): ?string
     {
-        return $this->eMail;
+        return $this->email;
     }
 
-    public function setEMail(string $eMail): self
+    public function setEmail(string $email): self
     {
-        $this->eMail = $eMail;
+        $this->email = $email;
 
         return $this;
     }
 
-    public function getPassword(): ?string
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUsername(): string
     {
-        return $this->password;
+        return (string) $this->email;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getPassword(): string
+    {
+        return (string) $this->password;
     }
 
     public function setPassword(string $password): self
@@ -70,28 +104,21 @@ class User implements \JsonSerializable
         return $this;
     }
 
-    public function getName(): ?string
+    /**
+     * @see UserInterface
+     */
+    public function getSalt()
     {
-        return $this->name;
+        // not needed when using the "bcrypt" algorithm in security.yaml
     }
 
-    public function setName(string $name): self
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials()
     {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getBirthday(): ?\DateTimeInterface
-    {
-        return $this->birthday;
-    }
-
-    public function setBirthday(\DateTimeInterface $birthday): self
-    {
-        $this->birthday = $birthday;
-
-        return $this;
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
     }
 
     /**
@@ -106,20 +133,32 @@ class User implements \JsonSerializable
         return
         [
             'id' => $this->getId(),
-            'email' => $this->getEMail(),
+            'email' => $this->getEmail(),
             'name' => $this->getName(),
             'birthday' => $this->getBirthday()->format("Y-m-d")
         ];
     }
 
-    public function getRoles(): ?array
+    public function getBirthday(): ?\DateTimeInterface
     {
-        return $this->roles;
+        return $this->birthday;
     }
 
-    public function setRoles(array $roles): self
+    public function setBirthday(\DateTimeInterface $birthday): self
     {
-        $this->roles = $roles;
+        $this->birthday = $birthday;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
 
         return $this;
     }
